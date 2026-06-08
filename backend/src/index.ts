@@ -9,8 +9,10 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+// Allow '*' wildcard for deployment flexibility (set specific origin in production env var)
+const corsOrigin = FRONTEND_URL === '*' ? true : FRONTEND_URL;
 
-app.use(cors({ origin: FRONTEND_URL, credentials: true }));
+app.use(cors({ origin: corsOrigin, credentials: true }));
 app.use(express.json({ limit: '50kb' }));
 
 app.get('/health', (_req: Request, res: Response) => {
