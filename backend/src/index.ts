@@ -8,11 +8,23 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
-// Allow '*' wildcard for deployment flexibility (set specific origin in production env var)
-const corsOrigin = FRONTEND_URL === '*' ? true : FRONTEND_URL;
+const ALLOWED_ORIGINS = (process.env.FRONTEND_URL || 'http://localhost:5173')
+  .split(',')
+  .map((o) => o.trim());
 
-app.use(cors({ origin: corsOrigin, credentials: true }));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (curl, mobile) and any listed origin
+      if (!origin || ALLOWED_ORIGINS.includes('*') || ALLOWED_ORIGINS.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS: origin ${origin} not allowed`));
+      }
+    },
+    credentials: true,
+  })
+);
 app.use(express.json({ limit: '50kb' }));
 
 app.get('/health', (_req: Request, res: Response) => {
